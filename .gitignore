@@ -1,5 +1,8 @@
 # project dependencies
 node_modules
 
-#env files
+# env files
 .env
+
+# dist files
+dist/
