@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: quiz-app
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+  namespace: quiz-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+      - name: mongo
+        image: mongo:5.0
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - name: mongo-data
+          mountPath: /data/db
+      volumes:
+      - name: mongo-data
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+  namespace: quiz-app
+spec:
+  selector:
+    app: mongo
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quiz-app
+  namespace: quiz-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quiz-app
+  template:
+    metadata:
+      labels:
+        app: quiz-app
+    spec:
+      containers:
+      - name: quiz-app
+        image: quiz-app:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: MONGO_URI
+          value: "mongodb://mongo:27017/quizgame"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quiz-app
+  namespace: quiz-app
+spec:
+  selector:
+    app: quiz-app
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: NodePort
+  nodePort: 30001
