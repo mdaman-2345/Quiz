@@ -11,16 +11,30 @@ export class AuthService {
     ) { }
 
     async register(username: string, password: string) {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        return this.usersService.create(username, hashedPassword);
+        try {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await this.usersService.create(username, hashedPassword);
+            return Promise.resolve(`${username} has been created successfully`)
+        } catch (err) {
+            return Promise.reject(err);
+        }
     }
 
     async login(username: string, password: string) {
-        const user = await this.usersService.findByUsername(username);
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            throw new UnauthorizedException('Invalid credentials');
+        try {
+            const user = await this.usersService.findByUsername(username);
+            if(!user){
+                throw new UnauthorizedException('User doesnot exist');
+            }
+            if (!(await bcrypt.compare(password, user.password))) {
+                throw new UnauthorizedException('Invalid credentials');
+            }
+            const payload = { username: user.username, sub: user._id };
+            //sharing the token which will stored in cookies or session storage for session management
+            return { accessToken: this.jwtService.sign(payload) };
         }
-        const payload = { username: user.username, sub: user._id };
-        return { accessToken: this.jwtService.sign(payload) };
+        catch (err) {
+            return Promise.reject(err);
+        }
     }
 }

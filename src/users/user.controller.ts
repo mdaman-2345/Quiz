@@ -7,6 +7,10 @@ export class UsersController {
 
     @Get(':username')
     async findUser(@Param('username') username: string) {
-        return this.usersService.findByUsername(username);
+        try {
+            return this.usersService.findByUsername(username);
+        } catch (err) {
+            return Promise.reject(err);
+        }
     }
 }
