@@ -12,6 +12,10 @@ export class AuthService {
 
     async register(username: string, password: string) {
         try {
+            const user = await this.usersService.findByUsername(username);
+            if (user) {
+                throw new UnauthorizedException("User Already Exist");
+            }
             const hashedPassword = await bcrypt.hash(password, 10);
             await this.usersService.create(username, hashedPassword);
             return Promise.resolve(`${username} has been created successfully`)
