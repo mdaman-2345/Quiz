@@ -37,10 +37,10 @@ Deployment Instructions
  
    You can also run the application in Docker containers using docker-compose. To do this, first build the containers:
    
-      docker-compose build
+      -docker-compose build
    
    Then, to start the containers:
    
-      docker-compose up
+      -docker-compose up
 
  
