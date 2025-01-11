@@ -12,7 +12,7 @@ import { QuestionsService } from '../questions/questions.service';
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer() server: Server;
 
-    private activeGames = new Map<string, any>();
+    public activeGames = new Map<string, any>();
 
     constructor(private readonly questionsService: QuestionsService) { }
 

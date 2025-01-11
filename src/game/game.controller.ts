@@ -1,11 +1,13 @@
 import { Controller, Post, Body } from '@nestjs/common';
+import { GameGateway } from './game.gateway';
 import { QuestionsService } from '../questions/questions.service';
 
 @Controller('game')
 export class GameController {
-    private activeGames = new Map<string, any>();
-
-    constructor(private readonly questionsService: QuestionsService) { }
+    constructor(
+        private readonly gameGateway: GameGateway,
+        private readonly questionsService: QuestionsService,
+    ) { }
 
     @Post('start')
     async startGame(@Body() data: { player1: string; player2: string }) {
@@ -20,17 +22,24 @@ export class GameController {
                 questions,
             };
 
-            this.activeGames.set(gameId, game);
+            // Notify players via WebSocket (using GameGateway)
+            this.gameGateway.activeGames.set(gameId, game); 
+            this.gameGateway.server.emit('game:init', {
+                gameId,
+                players: game.players,
+            });
 
             return {
                 message: 'Game started successfully.',
                 gameId,
-                players: [data.player1, data.player2],
+                players: game.players,
                 questions: questions.map((q) => ({ text: q.text, choices: q.choices })),
             };
         } catch (err) {
-            return Promise.reject(err);
+            return {
+                message: 'Failed to start game.',
+                error: err
+            };
         }
     }
-
 }
