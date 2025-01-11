@@ -18,7 +18,8 @@ export class AuthService {
             }
             const hashedPassword = await bcrypt.hash(password, 10);
             await this.usersService.create(username, hashedPassword);
-            return Promise.resolve(`${username} has been created successfully`)
+
+            return Promise.resolve({ message: (`${username} has been created successfully`) })
         } catch (err) {
             return Promise.reject(err);
         }
@@ -27,7 +28,7 @@ export class AuthService {
     async login(username: string, password: string) {
         try {
             const user = await this.usersService.findByUsername(username);
-            if(!user){
+            if (!user) {
                 throw new UnauthorizedException('User doesnot exist');
             }
             if (!(await bcrypt.compare(password, user.password))) {
